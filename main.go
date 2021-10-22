@@ -4,6 +4,7 @@ import (
     "fmt"
     "net/http"
     "log"
+	"time"
 
     "github.com/julienschmidt/httprouter"
 )
@@ -24,8 +25,8 @@ func main() {
 	server := &http.Server{
 		Addr:           ":8080",
 		Handler:        router,
-		ReadTimeout:    "0m5s",
-		WriteTimeout:   "0m5s",
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   5 * time.Second,
 		MaxHeaderBytes: 1048576,
 	}
 
