@@ -6,6 +6,7 @@ import (
     "log"
 	"time"
 	"fmt"
+	"io/ioutil"
 	"encoding/json"
 	"image"
 	"image/draw"
@@ -41,17 +42,45 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	res := Response{}
 
 	if address == "" || id == "" {
-		res.HttpCode = http.StatusBadRequest
-		res.Data = map[string]interface{}{"message": "A token address and id must be provided."}
+		res := Response{
+			HttpCode: http.StatusNotFound,
+			Data:     map[string]interface{}{"message": http.StatusText(http.StatusNotFound)},
+		}
 		res.RenderJson(w)
 		return
 	}
 
-	// Build the image.
-	var images []image.Image
-	mainImage := image.NewRGBA(image.Rect(0, 0, 20, 20))
-	for _, img := range images {
-		draw.Draw(mainImage, img.Bounds(), img, image.ZP, draw.Over)
+	// Get list of assets for the image.
+	// TODO : needs to figure these out based on the smart contract.
+	paths := []string{
+		"./assets/backgrounds/Bg-blue.png",
+		"./assets/skin/Base-F-1.png",
+		"./assets/outfits/Outfit1.png",
+		"./assets/hair/Hair-blonde.png",
+		"./assets/eyes/Eyes-blue.png",
+		"./assets/lips/Lips-orange.png",
+		"./assets/accessory/Acc-earring-gold.png",
+	}
+	var assets []image.Image
+	for _, path := range paths {
+		f, err := os.Open(path) 
+		if err != nil {
+			panic("Error opening an asset file.")
+		}
+		defer f.Close()
+
+		asset, err := png.Decode(f)
+		if err != nil {
+			panic("Error decoding an asset file.")
+		}
+
+		assets = append(assets, asset)
+	}
+
+	// Build the image using the assets.
+	mainImage := image.NewRGBA(image.Rect(0, 0, 1336, 1336))
+	for _, asset := range assets {
+		draw.Draw(mainImage, asset.Bounds(), asset, image.ZP, draw.Over)
 	}
 
 	// Create file output.
@@ -73,10 +102,32 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	res.RenderJson(w)
 }
 
+func ImageHandler(w http.ResponseWriter, r *http.Request) {
+    q := r.URL.Query()
+    address := q.Get("address")
+    id := q.Get("id")
+
+	if address == "" || id == "" {
+		w.WriteHeader(http.StatusNotFound)
+		w.Header().Set("Content-Type", "appplication/octet-stream")
+		return
+	}
+
+	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./%s_%s.png", address, id))
+	if err != nil {
+		panic("Error fetching the file.")
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "appplication/octet-stream")
+	w.Write(fileBytes)
+}
+
 func main() {
     router := httprouter.New()
     router.GET(basicChain("/", indexHandler))
     router.GET(basicChain("/token", tokenHandler))
+	router.GET(basicChain("/image", ImageHandler))
 
 	server := &http.Server{
 		Addr:           ":8080",
