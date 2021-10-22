@@ -1,10 +1,15 @@
 package main
 
 import (
+	"os"
     "net/http"
     "log"
 	"time"
+	"fmt"
 	"encoding/json"
+	"image"
+	"image/draw"
+	"image/png"
 
     "github.com/julienschmidt/httprouter"
 )
@@ -35,15 +40,36 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	res := Response{}
 
-	if (address == "" || id == "") {
+	if address == "" || id == "" {
 		res.HttpCode = http.StatusBadRequest
 		res.Data = map[string]interface{}{"message": "A token address and id must be provided."}
 		res.RenderJson(w)
 		return
 	}
 
+	// Build the image.
+	var images []image.Image
+	mainImage := image.NewRGBA(image.Rect(0, 0, 20, 20))
+	for _, img := range images {
+		draw.Draw(mainImage, img.Bounds(), img, image.ZP, draw.Over)
+	}
+
+	// Create file output.
+	file, err := os.Create(fmt.Sprintf("./%s_%s.png", address, id))
+	if err != nil {
+		panic("Error creating the file.")
+	}
+
+	// Encode the image to png in the file.
+	err = png.Encode(file, mainImage)
+	if err != nil {
+		panic("Error encoding the file.")
+	}
+
 	res.HttpCode = http.StatusOK
-	res.Data = map[string]interface{}{"address": address, "id": id}
+	res.Data = map[string]interface{}{
+		"address": address, "id": id,
+	}
 	res.RenderJson(w)
 }
 
