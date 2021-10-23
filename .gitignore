@@ -15,4 +15,4 @@
 # vendor/
 
 # Exclude the assets folder
-assets/
+var/

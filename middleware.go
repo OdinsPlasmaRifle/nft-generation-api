@@ -1,12 +1,12 @@
-package main 
+package main
 
 import (
-    "net/http"
-    "log"
+	"log"
+	"net/http"
 	"time"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
-    "github.com/julienschmidt/httprouter"
 )
 
 func basicChain(p string, h func(http.ResponseWriter, *http.Request)) (string, httprouter.Handle) {
