@@ -24,7 +24,7 @@ func (r *Response) RenderJson(w http.ResponseWriter) {
 	w.Write(successJson)
 }
 
-func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	res := Response{
 		HttpCode: http.StatusNotFound,
 		Data:     map[string]interface{}{"message": http.StatusText(http.StatusNotFound)},
@@ -47,7 +47,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Throw an error is the address or ID are not set.
 	if err != nil || address == "" {
-		NotFoundHandler(w, r)
+		notFoundHandler(w, r)
 		return
 	}
 
@@ -76,7 +76,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	res.RenderJson(w)
 }
 
-func ImageHandler(w http.ResponseWriter, r *http.Request) {
+func imageHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	address := q.Get("address")
 	id := q.Get("id")
@@ -104,7 +104,7 @@ func main() {
 	router := httprouter.New()
 	router.GET(basicChain("/", indexHandler))
 	router.GET(basicChain("/token", tokenHandler))
-	router.GET(basicChain("/image", ImageHandler))
+	router.GET(basicChain("/image", imageHandler))
 
 	server := &http.Server{
 		Addr:           ":8080",
