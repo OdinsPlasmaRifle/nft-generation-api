@@ -16,3 +16,6 @@
 
 # Exclude the assets folder
 var/
+
+# Annoying mac files
+.DS_Store
