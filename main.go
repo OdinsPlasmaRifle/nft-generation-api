@@ -43,9 +43,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func tokenHandler(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	address := q.Get("address")
-	id, err := strconv.Atoi(q.Get("id"))
+	ps := r.Context().Value("params").(httprouter.Params)
+	address := ps.ByName("address")
+	id, err := strconv.Atoi(ps.ByName("id"))
 	res := Response{}
 
 	// Throw an error is the address or ID are not set.
@@ -104,7 +104,7 @@ func main() {
 	)
 	router := httprouter.New()
 	router.GET("/", wrapper(chain.ThenFunc(indexHandler)))
-	router.GET("/token", wrapper(chain.ThenFunc(tokenHandler)))
+	router.GET("/tokens/:address/:id", wrapper(chain.ThenFunc(tokenHandler)))
 	router.GET("/images/:name", wrapper(chain.ThenFunc(imageHandler)))
 
 	server := &http.Server{
