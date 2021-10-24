@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
 )
 
 type Response struct {
@@ -83,22 +84,13 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func imageHandler(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	address := q.Get("address")
-	id := q.Get("id")
-
-	// TODO : change this to work with the image name instead of id and address.
-
-	if address == "" || id == "" {
+	ps := r.Context().Value("params").(httprouter.Params)
+	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./var/images/%s", ps.ByName("name")))
+	if err != nil {
 		// Set a non JSON not found error.
 		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "appplication/octet-stream")
 		return
-	}
-
-	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./var/images/%s_%s.png", address, id))
-	if err != nil {
-		panic("Error fetching the file.")
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -107,10 +99,13 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	chain := alice.New(
+		loggerHandler, recoveryHandler, corsHandler,
+	)
 	router := httprouter.New()
-	router.GET(basicChain("/", indexHandler))
-	router.GET(basicChain("/token", tokenHandler))
-	router.GET(basicChain("/image", imageHandler))
+	router.GET("/", wrapper(chain.ThenFunc(indexHandler)))
+	router.GET("/token", wrapper(chain.ThenFunc(tokenHandler)))
+	router.GET("/images/:name", wrapper(chain.ThenFunc(imageHandler)))
 
 	server := &http.Server{
 		Addr:           ":8080",
