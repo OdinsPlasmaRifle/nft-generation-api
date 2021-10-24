@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -68,10 +70,14 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	image, _ := CreateImage(assets)
 	// Create a file for the image
 	file, _ := CreatePNGFile(image, fmt.Sprintf("%s_%d", address, id))
+	// Create a file path for the image.
+	filePath := strings.Join(
+		[]string{r.Host, "/image/", path.Base(file.Name())}, "",
+	)
 
 	res.HttpCode = http.StatusOK
 	res.Data = map[string]interface{}{
-		"image": file.Name(), "attributes": attributes,
+		"image": filePath, "attributes": attributes,
 	}
 	res.RenderJson(w)
 }

@@ -41,8 +41,15 @@ func GetAssets(attributes [7]string) ([]image.Image, error) {
 }
 
 func CreateImage(assets []image.Image) (image.Image, error) {
+	if len(assets) < 1 {
+		panic("At least one asset must be provided.")
+	}
+
+	// Fetch the image bounds for the first asset.
+	b := assets[0].Bounds()
+
 	// Build the image using the assets.
-	img := image.NewRGBA(image.Rect(0, 0, 1336, 1336))
+	img := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
 	for _, asset := range assets {
 		draw.Draw(img, asset.Bounds(), asset, image.ZP, draw.Over)
 	}
