@@ -1,21 +1,18 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
 )
 
-func basicChain(p string, h func(http.ResponseWriter, *http.Request)) (string, httprouter.Handle) {
-	return p, wrapHandler(alice.New(loggerHandler, recoveryHandler, corsHandler).ThenFunc(h))
-}
-
-func wrapHandler(next http.Handler) httprouter.Handle {
+func wrapper(next http.Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "params", ps)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 

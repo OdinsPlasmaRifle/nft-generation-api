@@ -21,8 +21,6 @@ func GetAssets(attributes [7]string) ([]image.Image, error) {
 	}
 	var assets []image.Image
 	for _, path := range paths {
-		fmt.Println(path)
-
 		f, err := os.Open(path)
 		if err != nil {
 			panic("Error opening an asset file.")
