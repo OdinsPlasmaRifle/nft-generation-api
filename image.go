@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func GetAssets(attributes []string) ([]image.Image, error) {
+func GetAssets(attributes [7]string) ([]image.Image, error) {
 	// Get list of assets for the image.
 	paths := []string{
 		fmt.Sprintf("./var/assets/backgrounds/Bg-%s.png", attributes[1]),
