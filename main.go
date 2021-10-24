@@ -72,7 +72,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	file, _ := CreatePNGFile(image, fmt.Sprintf("%s_%d", address, id))
 	// Create a file path for the image.
 	filePath := strings.Join(
-		[]string{r.Host, "/image/", path.Base(file.Name())}, "",
+		[]string{"https://", r.Host, "/images/", path.Base(file.Name())}, "",
 	)
 
 	res.HttpCode = http.StatusOK
